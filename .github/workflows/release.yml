@@ -36,6 +36,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Build fonts
         run: |
+          mkdir -p dist
           python build.py \
             --ttf-only \
             --nerd-font \
