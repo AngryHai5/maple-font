@@ -38,6 +38,7 @@ jobs:
         run: |
           mkdir -p dist
           python build.py \
+            --outputdir ./dist \
             --ttf-only \
             --nerd-font \
             --cn \
