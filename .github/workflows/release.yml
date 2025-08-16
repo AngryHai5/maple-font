@@ -50,17 +50,26 @@ jobs:
   create-release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 关键权限
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: release
+          pattern: fonts-*  # 匹配上传的 Artifacts 名称
+          merge-multiple: true
+
       - name: Create Release
         run: |
-          # 合并所有变体
-          mkdir -p combined
-          cp release/**/*.ttf combined/
-          gh release create "${{ github.ref_name }}" combined/*.ttf \
-            --title "Maple Mono Build ($(date +%Y-%m-%d))" \
-            --notes "Automated build with variants"
+          # 统一文件路径
+          mkdir -p release_files
+          find release -name "*.ttf" -exec cp {} release_files/ \;
+          
+          # 创建 Release（标签用提交哈希避免重复）
+          gh release create \
+            "build-$(git rev-parse --short HEAD)" \
+            release_files/*.ttf \
+            --title "Maple Mono Build ($(date +%F))" \
+            --notes "Automated build"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
