@@ -77,66 +77,17 @@ jobs:
             echo Try appimage with path
             fontforge --version
           fi
-      - name: Build Font
-        run: python build.py --nerd-font --cn --feat cv01,cv03,cv07,cv40,cv61,ss03,ss05,ss07,ss08,ss11 --ttf-only
-
+      
       - name: Run custom script
         run: |
-          build_args="--archive"
-          if [ "${{ github.event.inputs.cn }}" == "true" ]; then
-            build_args="$build_args --cn"
-          fi
-          if [ "${{ github.event.inputs.normal }}" == "true" ]; then
-            build_args="$build_args --normal"
-          fi
-          if [ "${{ github.event.inputs.no_liga }}" == "true" ]; then
-            build_args="$build_args --no-liga"
-          fi
-          if [ "${{ github.event.inputs.no_hinted }}" == "true" ]; then
-            build_args="$build_args --no-hinted"
-          fi
-          if [ "${{ github.event.inputs.nf_mono }}" == "true" ]; then
-            build_args="$build_args --nf-mono"
-          fi
-          if [ -n "${{ github.event.inputs.feat }}" ]; then
-            build_args="$build_args --feat ${{ github.event.inputs.feat }}"
-          fi
-          if [ -n "${{ github.event.inputs.build_args }}" ]; then
-            build_args="$build_args ${{ github.event.inputs.build_args }}"
-          fi
-
-          echo "BUILD_ARGS=$build_args" >> $GITHUB_ENV
-          python build.py $build_args
+          python build.py --nerd-font --cn --feat cv01,cv03,cv07,cv40,cv61,ss03,ss05,ss07,ss08,ss11 --ttf-only
         continue-on-error: true
-      - id: check_issue
-        name: Check issue feature file
-        run: |
-          if [ -f fonts/issue.fea ]
-          then
-            echo 'exists=true' >> $GITHUB_OUTPUT
-          else
-            echo 'exists=false' >> $GITHUB_OUTPUT
-          fi
-      - name: Upload issue artifact
-        if: ${{ steps.check_issue.outputs.exists == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue-fea-file
-          path: fonts/issue.fea
       - name: Create release
         run: |
-          if [ ! -d "fonts/archive" ]; then
-            echo "Error: Failed to build font, please check [Run custom script] step."
+          if [ ! -d "dist" ]; then
+            echo "Error: No TTF files found in dist/"
             exit 1
           fi
-          echo "### Build arguments" >> NOTES
-          echo "\`\`\`" >> NOTES
-          echo "python build.py $BUILD_ARGS" >> NOTES
-          echo "\`\`\`" >> NOTES
-          echo "### Final Configuration" >> NOTES
-          echo "\`\`\`" >> NOTES
-          python build.py $BUILD_ARGS --dry | sed '1s/^/font_config: /' >> NOTES
-          echo "\`\`\`" >> NOTES
-          gh release create "v$(date +%s)" fonts/archive/*.* --notes-file NOTES
+          gh release create "v$(date +%s)" dist/*.ttf --notes-file NOTES
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
