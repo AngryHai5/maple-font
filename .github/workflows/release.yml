@@ -20,42 +20,47 @@ jobs:
     strategy:
       matrix:
         config: [
-          {name: normal-liga, args: "--normal --liga"},
-          {name: normal-no-liga, args: "--normal --no-liga"},
-          {name: liga, args: "--liga"},
-          {name: no-liga, args: "--no-liga"}
+          {name: "normal-liga", args: "--normal --liga"},
+          {name: "normal-no-liga", args: "--normal --no-liga"},
+          {name: "liga", args: "--liga"},
+          {name: "no-liga", args: "--no-liga"}
         ]
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-        cache-dependency-path: './requirements.txt'
-    - run: pip install -r requirements.txt
-    - name: Build fonts
-      run: |
-        python build.py --ttf-only --nerd-font --cn --feat cv01,cv03,cv07,cv40,cv61,ss03,ss05,ss07,ss08,ss11
-        
-    - uses: actions/upload-artifact@v4
-      with:
-        name: release-artifacts-${{ matrix.config.name }}
-        path: fonts/archive/*
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: './requirements.txt'
+      - run: pip install -r requirements.txt
+      - name: Build fonts
+        run: |
+          python build.py \
+            --ttf-only \
+            --nerd-font \
+            --cn \
+            --feat cv01,cv03,cv07,cv40,cv61,ss03,ss05,ss07,ss08,ss11 \
+            ${{ matrix.config.args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fonts-${{ matrix.config.name }}
+          path: dist/*.ttf
 
   create-release:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - uses: actions/download-artifact@v4
-      with:
-        pattern: release-artifacts*
-        path: release
-
-    - name: Release artifacts
-      run: python task.py publish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: release
+      - name: Create Release
+        run: |
+          # 合并所有变体
+          mkdir -p combined
+          cp release/**/*.ttf combined/
+          gh release create "${{ github.ref_name }}" combined/*.ttf \
+            --title "Maple Mono Build ($(date +%Y-%m-%d))" \
+            --notes "Automated build with variants"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
