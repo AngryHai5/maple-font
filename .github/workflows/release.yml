@@ -36,8 +36,8 @@ jobs:
     - run: pip install -r requirements.txt
     - name: Build fonts
       run: |
-        python build.py --archive --cn-both --hinted ${{ matrix.config.args }} ${{ github.event.inputs.build_args }}
-        python build.py --archive --cn-both --no-hinted --cache ${{ matrix.config.args }} ${{ github.event.inputs.build_args }}
+        python build.py --ttf-only --nerd-font --cn --feat cv01,cv03,cv07,cv40,cv61,ss03,ss05,ss07,ss08,ss11
+        
     - uses: actions/upload-artifact@v4
       with:
         name: release-artifacts-${{ matrix.config.name }}
