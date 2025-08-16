@@ -77,6 +77,8 @@ jobs:
             echo Try appimage with path
             fontforge --version
           fi
+      - name: Build Font
+        run: python build.py --nerd-font --cn --feat cv01,cv03,cv07,cv40,cv61,ss03,ss05,ss07,ss08,ss11 --ttf-only
 
       - name: Run custom script
         run: |
