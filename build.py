@@ -636,7 +636,7 @@ class BuildOption:
     def __init__(self, use_hinted: bool):
         # paths
         self.src_dir = "source"
-        self.output_dir = "fonts"
+        self.output_dir = "dist"
         self.output_otf = joinPaths(self.output_dir, "OTF")
         self.output_ttf = joinPaths(self.output_dir, "TTF")
         self.output_ttf_hinted = joinPaths(self.output_dir, "TTF-AutoHint")
