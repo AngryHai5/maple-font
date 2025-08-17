@@ -36,13 +36,14 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Build fonts
         run: |
-          
+          mkdir -p dist && rm -rf dist/*
           python build.py \
             --ttf-only \
             --nerd-font \
             --cn \
             --feat cv01,cv03,cv07,cv40,cv61,ss03,ss05,ss07,ss08,ss11 \
             ${{ matrix.config.args }}
+          ls dist
       - uses: actions/upload-artifact@v4
         with:
           name: fonts-${{ matrix.config.name }}
